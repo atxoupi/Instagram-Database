@@ -8,23 +8,51 @@ from eralchemy import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
+class Follower(Base):
+    __tablename__ = 'follower'
     id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
+
+class User(Base):
+    __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+    userName = Column(String(250))
+    firtsName = Column(String(250))
+    lastName = Column(String(250))
+    email = Column(String(250), nullable=False)
+    user_from = relationship('follower', backref='user', lazy=True)
+    user_to = relationship('follower', backref='user', lazy=True)
+    user_comment = relationship('comment', backref='user', lazy=True)
+    user_post = relationship('post', backref='user', lazy=True)
+    followers = relationship('follow_user', secondary=follow_user, lazy='subquery',
+        backref=backref('user', lazy=True))
+
+follow_user = Table('follow_user',
+    Column('follower_id', Integer, db.ForeignKey('follower.id'), primary_key=True),
+    Column('user_id', Integer, db.ForeignKey('user.id'), primary_key=True)
+)
+
+
+class Comment(Base):
+    __tablename__ = 'comment'
+    id = Column(Integer, primary_key=True)
+    commentText = Column(String(250))
+    autor_id = Column(Integer, ForeignKey('user.id'),nullable=False)
+    post_id = Column(Integer, ForeignKey('post.id'),nullable=False)
+
+class Post(Base):
+    __tablename__ = 'post'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'),nullable=False)
+    post_comment = relationship('comment', backref='post', lazy=True)
+    post_media = relationship('media', backref='post', lazy=True)
+
+class Media(Base):
+    __tablename__ = 'media'
+    id = Column(Integer, primary_key=True)
+    type = Column(String(25))
+    url = Column(String(250))
+    post_id = Column(Integer, ForeignKey('post.id'),nullable=False)
 
     def to_dict(self):
         return {}
