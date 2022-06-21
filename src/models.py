@@ -11,6 +11,8 @@ Base = declarative_base()
 class Follower(Base):
     __tablename__ = 'follower'
     id = Column(Integer, primary_key=True)
+    user_from_id= Column(Integer, ForeignKey('user.id'), nullable=False)
+    user_to_id= Column(Integer, ForeignKey('user.id'), nullable=False)
 
 
 class User(Base):
@@ -20,17 +22,10 @@ class User(Base):
     firtsName = Column(String(250))
     lastName = Column(String(250))
     email = Column(String(250), nullable=False)
-    user_from = relationship('follower', backref='user', lazy=True)
-    user_to = relationship('follower', backref='user', lazy=True)
-    user_comment = relationship('comment', backref='user', lazy=True)
-    user_post = relationship('post', backref='user', lazy=True)
-    followers = relationship('follow_user', secondary=follow_user, lazy='subquery',
-        backref=backref('user', lazy=True))
-
-follow_user = Table('follow_user',
-    Column('follower_id', Integer, db.ForeignKey('follower.id'), primary_key=True),
-    Column('user_id', Integer, db.ForeignKey('user.id'), primary_key=True)
-)
+    user_comment = relationship('Comment', backref='user', lazy=True)
+    user_post = relationship('Post', backref='user', lazy=True)
+    follower_from = relationship('Follower', backref='user', lazy=True)
+    follower_to = relationship('Follower', backref='user', lazy=True)
 
 
 class Comment(Base):
